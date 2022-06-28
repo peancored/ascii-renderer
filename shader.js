@@ -1,7 +1,7 @@
 const { vec2, vec3, vec4 } = glMatrix;
 
 const greyscale1 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-const greyscale2 = "M@BHENR#KWXDFPQASUZbdehx*8Gm&04LOVYkpq5Tagns69owz$CIu23Jcfry%1v7l+it[]{}?j|()=~!-/<>\\\"^_';,:`. ";
+const greyscale2 = "MW@BHENR#KXDFPQASUZbdehx*8Gm&04LOVYkpq5Tagns69oz$CIu23Jcfry%1v7l+it[]{}?j|()=~!-/<>\\\"^_';,:`. ";
 
 const GREYSCALE = greyscale2;
 
