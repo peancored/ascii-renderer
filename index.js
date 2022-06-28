@@ -1,8 +1,8 @@
 import { pixelShader } from './shader.js';
 
 const resolution = {
-    width: 160,
-    height: 120
+    width: 208,
+    height: 117
 };
 
 const canvas = document.querySelector('.canvas');

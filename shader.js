@@ -1,7 +1,7 @@
 const { vec2, vec3, vec4 } = glMatrix;
 
 const greyscale1 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-const greyscale2 = "@MBHENR#KWXDFPQASUZbdehx*8Gm&04LOVYkpq5Tagns69owz$CIu23Jcfry%1v7l+it[]{}?j|()=~!-/<>\\\"^_';,:`. ";
+const greyscale2 = "M@BHENR#KWXDFPQASUZbdehx*8Gm&04LOVYkpq5Tagns69owz$CIu23Jcfry%1v7l+it[]{}?j|()=~!-/<>\\\"^_';,:`. ";
 
 const GREYSCALE = greyscale2;
 
@@ -9,8 +9,13 @@ const STEPS = 100;
 const MAX_DIST = 100;
 const SURF_DIST = .01;
 
+function len(v) {
+    return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+}
+
 function dSphere(s, p) {
-    return vec3.len(vec3.sub(vec3.create(), p, [s[0], s[1], s[2]])) - s[3];
+    const rs = vec3.sub(vec3.create(), p, [s[0], s[1], s[2]]);
+    return len(rs) - s[3];
 }
 
 function dist(p) {
@@ -26,7 +31,9 @@ function march(ro, rd) {
     let dO = 0.;
     
     for (let i = 0; i < STEPS; i++) {
-        const p = vec3.add(vec3.create(), ro, vec3.scale(vec3.create(), rd, dO));
+        let p = vec3.create();
+        vec3.add(p, ro, vec3.scale(p, rd, dO));
+
         const dS = dist(p);
         
         dO += dS;
@@ -48,19 +55,22 @@ function getNormal(p) {
         d - dist(vec3.sub(vec3.create(), p, [e[1], e[1], e[0]]))
     );
     
-    return vec3.normalize(vec3.create(), n);
+    return vec3.normalize(n, n);
 }
 
 function light(p, time) {
     const pos = vec3.fromValues(2. * Math.sin(time / 1000), 4, 6. + 2. * Math.cos(time / 1000));
-    const l = vec3.normalize(vec3.create(), vec3.sub(vec3.create(), pos, p));
+    const l = vec3.sub(vec3.create(), pos, p);
+    const ld = vec3.normalize(vec3.create(), l);
     const n = getNormal(p);
     
-    let dif = vec3.dot(n, l);
+    let dif = vec3.dot(n, ld);
     
-    const d = march(vec3.add(vec3.create(), p,  vec3.scale(vec3.create(), n,  SURF_DIST * 2.)), l);
+    let d = vec3.create();
+
+    d = march(vec3.add(d, p,  vec3.scale(d, n,  SURF_DIST * 2.)), l);
     
-    if (d < vec3.length(vec3.sub(vec3.create(), pos, p))) {
+    if (d < len(l)) {
         dif *= .1;
     }
     
@@ -77,26 +87,31 @@ const getColor = (value) => {
 }
 
 export function pixelShader(fragCoord, resolution, time) {
-    const uv = vec2.div(
-        vec2.create(), 
+    const uv = vec2.create();
+
+    vec2.scale(
+        uv, 
         vec2.sub(
-            vec2.create(), 
+            uv, 
             fragCoord,
             vec2.scale(
-                vec2.create(), 
+                uv, 
                 resolution, 
                 0.5
             )
         ), 
-        [ resolution[0], -resolution[1] ]
+        1 / -resolution[1]
     );
 
     const ro = vec3.fromValues(0, 1, 0);
-    const rd = vec3.normalize(vec3.create(), vec3.fromValues(uv[0], uv[1], 1));
+
+    const rd = vec3.fromValues(uv[0], uv[1], 1);
+    vec3.normalize(rd, rd);
 
     const d = march(ro, rd);
     
-    const p = vec3.add(vec3.create(), ro, vec3.scale(vec3.create(), rd, d));
+    const p = vec3.create();
+    vec3.add(p, ro, vec3.scale(p, rd, d));
     
     const col = light(p, time);
 
